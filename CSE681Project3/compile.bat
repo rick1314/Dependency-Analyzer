@@ -1,0 +1,1 @@
+devenv Project3.sln /ReBuild
