@@ -1,4 +1,4 @@
-# Dependency-Analyzer
+# Project Details
 The philosophy behind the project is that, less number of dependencies and strong components the project files have, less the number of files that require to be updated when a single file is changed.
 
 ### Features:
