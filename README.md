@@ -8,3 +8,8 @@ Features:
 - Stores all the results in text files and displays on the GUI interface
 - Contains a Project OCD about the final project along with Package Diagram, Class Diagram and Activity Diagram. 
 - Constains compile.bat and run.bat to compile and run the project (must be run with Administrator priviledges)
+
+
+## Automated GUI Demo 
+
+[[ https://i.imgur.com/8km3DaL.gif ]]
