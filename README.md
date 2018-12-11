@@ -12,4 +12,4 @@ Features:
 
 ## Automated GUI Demo 
 
-[[ https://i.imgur.com/8km3DaL.gif ]]
+[[https://i.imgur.com/8km3DaL.gif]]
