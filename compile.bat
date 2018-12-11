@@ -1,0 +1,1 @@
+devenv AnalyzerClientServer.sln "/p:DefineConstants=Client_Test" /ReBuild

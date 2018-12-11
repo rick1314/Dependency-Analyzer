@@ -339,9 +339,107 @@ namespace Dependency_Analysis
             //tt.show();
             return tt;
         }
+    /// <summary>
+    /// Usage details
+    /// </summary>
+    public static StringBuilder usageDetails(string[] args)
+    {
+      //ShowCommandLine(args);
+      //stores types and files they were used in
+      //Depend depend = new Depend();
+      //AdjL e = new AdjL(); // Storing edge list as list of tuples string,string
 
-        //Finds the dependency by comparing the data from makeTT and makett
-        static AdjL depAn(string[] args)
+      StringBuilder msg = new StringBuilder();
+      msg.Append(Environment.NewLine);
+      //makes type table
+      TypeTable tab = new TypeTable();
+      tab = makeTT(args);
+
+      //makes types used table
+      TypeTable tt = new TypeTable();
+      tt = makett(args);
+
+      //We are gonna process and find namespaces we use in each file
+      //Console.Write("\n  Demonstrating NameSpace Finder");
+      //Console.Write("\n ===============================\n");
+
+      string[] toCheck = { "namespace", "class", "interface" };
+      foreach (var type in toCheck)
+      {
+        if (tab.table.ContainsKey(type))
+
+          foreach (TypeItem val in tab.table[type]) // will have to do same for class
+          {
+            //Console.Write("\n    [{0}, {1}]", val.namesp, val.file);
+            foreach (var elem in tt.table)
+              foreach (var item in elem.Value)
+              {
+                //Console.Write("\n      {0}    [{1}, {2}]", elem.Key, item.namesp, item.file);
+                if (val.namesp.Equals(item.namesp) && !val.file.Equals(item.file)) //checking if the current using is defined in some file
+                {
+                  msg.Append(Environment.NewLine +"[" +item.namesp + " - USED IN - "+ item.file + "- DEFINED IN - " + val.file + "]");
+                  //e.Add(Tuple.Create(item.file, val.file));
+                }
+              }
+          }
+      }
+      Console.Write("\n");
+      //Console.ReadKey();
+      return msg;
+    }
+
+    public static StringBuilder usageDetailsF(List<string> files)
+    {
+      //ShowCommandLine(args);
+      //stores types and files they were used in
+      //Depend depend = new Depend();
+      //AdjL e = new AdjL(); // Storing edge list as list of tuples string,string
+
+      StringBuilder msg = new StringBuilder();
+      msg.Append(Environment.NewLine);
+
+      //makes type table
+      TypeTable tab = new TypeTable();
+      tab = makeTTF(files);
+
+      //makes types used table
+      TypeTable tt = new TypeTable();
+      tt = makettF(files);
+
+      //We are gonna process and find namespaces we use in each file
+      //Console.Write("\n  Demonstrating NameSpace Finder");
+      //Console.Write("\n ===============================\n");
+
+      string[] toCheck = { "namespace", "class", "interface" };
+      foreach (var type in toCheck)
+      {
+        if (tab.table.ContainsKey(type))
+
+          foreach (TypeItem val in tab.table[type]) // will have to do same for class
+          {
+            //Console.Write("\n    [{0}, {1}]", val.namesp, val.file);
+            foreach (var elem in tt.table)
+              foreach (var item in elem.Value)
+              {
+                //Console.Write("\n      {0}    [{1}, {2}]", elem.Key, item.namesp, item.file);
+                if (val.namesp.Equals(item.namesp) && !val.file.Equals(item.file)) //checking if the current using is defined in some file
+                {
+                  msg.Append(Environment.NewLine + "[" + item.namesp + " - USED IN - " + item.file + "- DEFINED IN - " + val.file + "]");
+                  //e.Add(Tuple.Create(item.file, val.file));
+                }
+              }
+          }
+      }
+      Console.Write("\n");
+      //Console.ReadKey();
+      return msg;
+    }
+
+
+
+
+    //Finds the dependency by comparing the data from makeTT and makett
+    static AdjL depAn(string[] args)
         {
             //ShowCommandLine(args);
             //stores types and files they were used in
@@ -471,7 +569,7 @@ namespace Dependency_Analysis
         {
             StringBuilder msg = new StringBuilder();
             msg.Append(Environment.NewLine+"     Generating all the Components");
-            msg.Append(Environment.NewLine + "  ==============================");
+            msg.Append(Environment.NewLine + "  =======================");
             var graph_nodes = new List<Vertex>();
             var v = new List<Vertex>(); ;
             List<string> files = new List<string>();
@@ -518,7 +616,7 @@ namespace Dependency_Analysis
 
                 foreach (var ver in vertices)
                 {
-                      msg.Append(ver.ToString());
+                      msg.Append(ver.ToString()+" ");
                     // Console.WriteLine(string.Join(" ", v.Dependencies));
                 }
             msg.Append(Environment.NewLine);
@@ -532,7 +630,7 @@ namespace Dependency_Analysis
     {
       StringBuilder msg = new StringBuilder();
       msg.Append(Environment.NewLine + "     Generating all the Components");
-      msg.Append(Environment.NewLine + "  ==============================");
+      msg.Append(Environment.NewLine + "  =======================");
       var graph_nodes = new List<Vertex>();
       var v = new List<Vertex>(); ;
       List<string> files = new List<string>();
@@ -579,7 +677,7 @@ namespace Dependency_Analysis
 
         foreach (var ver in vertices)
         {
-          msg.Append(ver.ToString());
+          msg.Append(ver.ToString()+" ");
           // Console.WriteLine(string.Join(" ", v.Dependencies));
         }
         msg.Append(Environment.NewLine);

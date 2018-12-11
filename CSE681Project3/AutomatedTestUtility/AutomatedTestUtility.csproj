@@ -53,6 +53,10 @@
       <Project>{e842eec3-0a21-4223-b7a1-c1f3bc382275}</Project>
       <Name>Dependency Analysis</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Display\Display.csproj">
+      <Project>{7f6aee33-e7e5-4b83-b505-8be313defeb2}</Project>
+      <Name>Display</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

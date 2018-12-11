@@ -1,19 +1,32 @@
-﻿////////////////////////////////////////////////////////////////////////////
-// NavigatorClient.xaml.cs - Demonstrates Directory Navigation in WPF App //
-// ver 2.0                                                                //
-// Jim Fawcett, CSE681 - Software Modeling and Analysis, Fall 2017        //
-////////////////////////////////////////////////////////////////////////////
+﻿/////////////////////////////////////////////////////////////////////////////////////
+// MainWindow.xaml.cs - Displays the features of the Analyzer, enables users to    //
+// select files for analysis and get the result of the analysis                    //
+// ver 3.1                                                                         //
+// Author: Debopriyo Bhattacharya                                                  //
+// Original Code by Jim Fawcett, CSE681 - Software Modeling and Analysis, Fall 2018//
+/////////////////////////////////////////////////////////////////////////////////////
 /*
  * Package Operations:
  * -------------------
- * This package defines WPF application processing by the client.  The client
- * displays a local FileFolder view, and a remote FileFolder view.  It supports
+ * This package is the client side of the Analyzer. 
+ * It displays a local FileFolder view, and a remote FileFolder view.  It supports
  * navigating into subdirectories, both locally and in the remote Server.
+ * The client can select files or just path.
+ * It can then pass that to the server which responds with the analysis file paths.
+ * It can then display the results which include the TypeTable, dependecy and strong components.
  * 
- * It also supports viewing local files.
  * 
  * Maintenance History:
  * --------------------
+ * ver 3.1 : 04 Dec 2018
+ * - added test case which is invoked by "Client_Test" which spawns a new thread
+ *   which uses Dispatcher.Invoke to interact with the UI and display test case
+ *   defined in Testing function
+ * ver 3.0 : 02 Dec 2018
+ * - modified to work as a client gui for file dependency analyzer program
+ * - added functions to analyse files by calling the server thread and passing paths
+ * ver 2.2 : 01 Dec 2018
+ * - added functionalities for Connection checking , Remote Files and Folder selecting 
  * ver 2.1 : 26 Oct 2017
  * - relatively minor modifications to the Comm channel used to send messages
  *   between NavigatorClient and NavigatorServer
@@ -23,7 +36,17 @@
  *   - added the CsCommMessagePassing prototype
  * ver 1.0 : 22 Oct 2017
  * - first release
+ * 
+ * Requirements: Toker, SemiExp, Parser, MessagePassingCommService,
+ * FileMgr, Environment, Element, Dependency Analysis, AnalyzerServer packages. 
+ * 
+ * USE: Client_Test for the testing the functionality
+ * 
+ * 
  */
+
+
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,20 +73,17 @@ namespace Navigator
     Comm comm { get; set; } = null;
     Dictionary<string, Action<CommMessage>> messageDispatcher = new Dictionary<string, Action<CommMessage>>();
     Thread rcvThread = null;
-    bool connected = false;
+    Thread testingThread = null;
+    bool connected { get; set; } = false;
 
-    /// <summary>
-    /// ////////////////////////////////
-    /// </summary>
-
-    public string path { get; set; }
+    private string path { get; set; }
 
 
     public MainWindow()
     {
       InitializeComponent();
       initializeEnvironment();
-      Console.Title = "Client";
+      Console.Title = "Analyzer Client Console";
       fileMgr = FileMgrFactory.create(FileMgrType.Local); // uses Environment
       getTopFiles();
 
@@ -72,8 +92,10 @@ namespace Navigator
       rcvThread = new Thread(rcvThreadProc);
       rcvThread.Start();
 
-      //getRemoteFiles();
-
+#if(Client_Test)
+      testingThread = new Thread(Testing);
+      testingThread.Start();
+#endif
       /*
       tabControl.SelectedIndex = 1;  // moves to second tab
       */
@@ -92,7 +114,6 @@ namespace Navigator
     void initializeMessageDispatcher()
     {
       // load remoteFiles listbox with files from root
-
       messageDispatcher["getTopFiles"] = (CommMessage msg) =>
       {
         remoteFiles.Items.Clear();
@@ -102,7 +123,6 @@ namespace Navigator
         }
       };
       // load remoteDirs listbox with dirs from root
-
       messageDispatcher["getTopDirs"] = (CommMessage msg) =>
       {
         remoteDirs.Items.Clear();
@@ -114,7 +134,6 @@ namespace Navigator
         CurrPath.Text = System.IO.Path.GetFullPath(path);
       };
       // load remoteFiles listbox with files from folder
-
       messageDispatcher["moveIntoFolderFiles"] = (CommMessage msg) =>
       {
         remoteFiles.Items.Clear();
@@ -124,7 +143,6 @@ namespace Navigator
         }
       };
       // load remoteDirs listbox with dirs from folder
-
       messageDispatcher["moveIntoFolderDirs"] = (CommMessage msg) =>
       {
         remoteDirs.Items.Clear();
@@ -135,9 +153,7 @@ namespace Navigator
         }
         CurrPath.Text = System.IO.Path.GetFullPath(path);
       };
-
       // moveUp remoteFiles listbox with files from ancestor
-
       messageDispatcher["moveUpFiles"] = (CommMessage msg) =>
       {
         remoteFiles.Items.Clear();
@@ -147,7 +163,6 @@ namespace Navigator
         }
       };
       // moveUp remoteDirs listbox with dirs from ancestor
-
       messageDispatcher["moveUpDirs"] = (CommMessage msg) =>
       {
         remoteDirs.Items.Clear();
@@ -158,26 +173,34 @@ namespace Navigator
         }
         CurrPath.Text = System.IO.Path.GetFullPath(path);
       };
-
-
       messageDispatcher["getFileDetails"] = (CommMessage msg) =>
       {
         string path = msg.arguments[0];
-        //CodePopUp popup = new CodePopUp();
-        //popup.codeView.Text = path;
-        //popup.Show();
-
         if (!Selected.Items.Contains(path))
         {
           Selected.Items.Add(path);
         }
-
       };
-
+      messageDispatcher["displayAnalysis"] = (CommMessage msg) =>
+      {
+        tabControl.SelectedIndex = 2;
+        RawOut.Items.Clear();
+        StrongComp.Items.Clear();
+        StreamReader rawout = new StreamReader(msg.arguments[0]);
+        StreamReader strongcomp = new StreamReader(msg.arguments[1]);
+        string sLine;
+        while ((sLine = rawout.ReadLine()) != null)
+        {
+          RawOut.Items.Add(sLine);
+        }
+        while ((sLine = strongcomp.ReadLine()) != null)
+        {
+          StrongComp.Items.Add(sLine);
+        }
+        rawout.Close();
+        strongcomp.Close();
+      };
     }
-
-    
-    
     
     //----< define processing for GUI's receive thread >-------------
 
@@ -263,20 +286,6 @@ namespace Navigator
       {
         Selected.Items.Add(path);
       }
-      //Selected.Items.Add("Hello Brother");
-
-      //try
-      //{
-      //  string path = System.IO.Path.Combine(Environment.root, fileName);
-      //  string contents = File.ReadAllText(path);
-      //  CodePopUp popup = new CodePopUp();
-      //  popup.codeView.Text = contents;
-      //  popup.Show();
-      //}
-      //catch (Exception ex)
-      //{
-      //  string msg = ex.Message;
-      //}
     }
     //----< move to parent directory and show files and subdirs >----
 
@@ -341,9 +350,8 @@ namespace Navigator
       msg1.arguments.Add(remoteFiles.SelectedValue as string);
       comm.postMessage(msg1);
     }
-    //----< move to parent directory of current remote path >--------
 
-    private void RemoteUp_Click(object sender, RoutedEventArgs e)
+    private void getRemoteDirs()
     {
       CommMessage msg1 = new CommMessage(CommMessage.MessageType.request);
       msg1.from = ClientEnvironment.endPoint;
@@ -355,6 +363,14 @@ namespace Navigator
       CommMessage msg2 = msg1.clone();
       msg2.command = "moveUpFiles";
       comm.postMessage(msg2);
+    }
+    
+    //----< move to parent directory of current remote path >--------
+
+    private void RemoteUp_Click(object sender, RoutedEventArgs e)
+    {
+      connected = true;
+      getRemoteDirs();
 
     }
     //----< move into remote subdir and display files and subdirs >--
@@ -363,146 +379,55 @@ namespace Navigator
      * - recv thread will create Action<CommMessage>s for the UI thread
      *   to invoke to load the remoteFiles and remoteDirs listboxs
      */
-    private void remoteDirs_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    private void moveIntoDir(string DirName)
     {
       CommMessage msg1 = new CommMessage(CommMessage.MessageType.request);
       msg1.from = ClientEnvironment.endPoint;
       msg1.to = ServerEnvironment.endPoint;
       msg1.command = "moveIntoFolderDirs";
-      msg1.arguments.Add(remoteDirs.SelectedValue as string);
+      msg1.arguments.Add(DirName);
       comm.postMessage(msg1);
       CommMessage msg2 = msg1.clone();
       msg2.command = "moveIntoFolderFiles";
       comm.postMessage(msg2);
+
     }
 
+    private void remoteDirs_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+      moveIntoDir(remoteDirs.SelectedValue as string);
+    }
+    //Shows if a connection has been established with the server or not
     private void ConButton_Click(object sender, RoutedEventArgs e)
     {
       conBlock.Text = (connected == true) ? "Yes!" : "No!";
     }
 
-
-
-
-
-
-    /////////////////////////////////////////////
-    /*
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-          path = Directory.GetCurrentDirectory();
-          path = getAncestorPath(2, path);
-          LoadNavTab(path);
-        }
-        //----< find parent paths >--------------------------------------
-
-        string getAncestorPath(int n, string path)
-        {
-          for (int i = 0; i < n; ++i)
-            path = Directory.GetParent(path).FullName;
-          return path;
-        }
-        //----< file Find Libs tab with subdirectories and files >-------
-
-        void LoadNavTab(string path)
-        {
-          Dirs.Items.Clear();
-          CurrPath.Text = path;
-          string[] dirs = Directory.GetDirectories(path);
-          Dirs.Items.Add("..");
-          foreach (string dir in dirs)
-          {
-            DirectoryInfo di = new DirectoryInfo(dir);
-            string name = System.IO.Path.GetDirectoryName(dir);
-            Dirs.Items.Add(di.Name);
-          }
-          Files.Items.Clear();
-          string[] filess = Directory.GetFiles(path);
-          foreach (string file in filess)
-          {
-            string name = System.IO.Path.GetFileName(file);
-            Files.Items.Add(name);
-          }
-        }
-        //----< handle selections in files listbox >---------------------
-
-        private void Files_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-          if (unselecting)
-          {
-            unselecting = false;
-            return;
-          }
-          //if (swin == null)
-          //{
-          //  swin = new SelectionWindow();
-          //  swin.setMainWindow(this);
-          //}
-          //swin.Show();
-
-          if (e.AddedItems.Count == 0)
-            return;
-          string selStr = e.AddedItems[0].ToString();
-          selStr = System.IO.Path.Combine(path, selStr);
-          if (!selectedFiles.Contains(selStr))
-          {
-            selectedFiles.Add(selStr);
-            //swin.show(selStr);
-          }
-        }
-        //----< unselect files called by unloading SelectionWindow >-----
-
-        public void unselectFiles()
-        {
-          unselecting = true;  // needed to avoid using selection logic
-          //selectedFiles.Clear();
-          Files.UnselectAll();
-        }
-        //----< move into double-clicked directory, display contents >---
-
-        private void Dirs_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-          string selectedDir = Dirs.SelectedItem.ToString();
-          if (selectedDir == "..")
-            path = getAncestorPath(1, path);
-          else
-            path = System.IO.Path.Combine(path, selectedDir);
-          LoadNavTab(path);
-        }
-        //----< shut down the SelectionWindow if open >------------------
-
-        private void Window_Unloaded(object sender, RoutedEventArgs e)
-        {
-          //swin.Close();
-        }
-    */
-    private void Anal1_Click(object sender, RoutedEventArgs e)
+    //This function is for analysing an entire directory
+    private void analpath()
     {
       if (CurrPath.Text != "")
       {
         Console.WriteLine("\nOur path is: {0}", CurrPath.Text);
 
-        tabControl.SelectedIndex = 2;
-        //RawOut
-        //StrongComp
-        string[] paths = {"C:\\Users\\RICK\\Desktop\\First Sem\\SMA\\Project3\\CSE681Project3\\result\\result.txt",
-                        "C:\\Users\\RICK\\Desktop\\First Sem\\SMA\\Project3\\CSE681Project3\\result\\strongCom.txt" };
 
-        StreamReader rawout = new StreamReader(paths[0]);
-        StreamReader strongcomp = new StreamReader(paths[1]);
+        //now we will send the path to analysePath
+        CommMessage msg1 = new CommMessage(CommMessage.MessageType.request);
+        msg1.from = ClientEnvironment.endPoint;
+        msg1.to = ServerEnvironment.endPoint;
+        msg1.command = "analysePath";
+        msg1.arguments.Add(CurrPath.Text);
+        comm.postMessage(msg1);
 
-        string sLine;
-        while ((sLine = rawout.ReadLine()) != null)
-        {
-          RawOut.Items.Add(sLine);
-        }
-
-        while ((sLine = strongcomp.ReadLine()) != null)
-        {
-          StrongComp.Items.Add(sLine);
-        }
-
+        //message is sent
+        
       }
+    }
+
+    private void Anal1_Click(object sender, RoutedEventArgs e)
+    {
+
+      analpath();
 
     }
 
@@ -520,9 +445,39 @@ namespace Navigator
 
         }
 
+        CommMessage msg1 = new CommMessage(CommMessage.MessageType.request);
+        msg1.from = ClientEnvironment.endPoint;
+        msg1.to = ServerEnvironment.endPoint;
+        msg1.command = "analyseFiles";
+        msg1.arguments = files;
+        comm.postMessage(msg1);
+
+
       }
 
     }
+
+
+    //Automated Testing GUI
+
+    private void Testing()
+    {
+      Thread.Sleep(1000);
+      Dispatcher.Invoke(() => { tabControl.SelectedIndex = 1; });
+      Thread.Sleep(2000);
+      Dispatcher.Invoke(() => { getRemoteDirs(); });
+      Thread.Sleep(4000);
+      Console.WriteLine("waiting 4 seconds before selecting directory");
+      string dirName = remoteDirs.Items[remoteDirs.Items.Count / 2] as string;
+      Console.WriteLine("Selected Directory: ", dirName);
+      Thread.Sleep(1000);
+      Dispatcher.Invoke(() => { moveIntoDir(dirName); });
+      Thread.Sleep(1000);
+      Dispatcher.Invoke(() => { analpath(); });
+    }
+
+
+
 
   }
 

@@ -1,4 +1,7 @@
-file1 file2 
-file3 
-file4 
-file5 file6
+
+     Generating all the Components
+  =======================
+Total number of components: 3
+TestCase-eligibleCheck.cs SemiT.cs 
+t2.cs 
+t1.cs t3.cs 

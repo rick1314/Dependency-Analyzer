@@ -3,7 +3,7 @@
      Generating all the Components
   ==============================
 Total number of components: 4
-TestCase-eligibleCheck.csSemiT.cs
-t2.cs
-t3.cst1.cs
-TypeTable.cs
+TestCase-eligibleCheck.cs SemiT.cs 
+t2.cs 
+t3.cs t1.cs 
+TypeTable.cs 

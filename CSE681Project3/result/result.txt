@@ -74,3 +74,12 @@ public Namespace
       [TypeTable.cs, namesp]
 enum
       [TestCase-eligibleCheck.cs, WeekDays]
+
+[Lexer - USED IN - TestCase-eligibleCheck.cs- DEFINED IN - SemiT.cs]
+[myEligibleCheck - USED IN - SemiT.cs- DEFINED IN - TestCase-eligibleCheck.cs]
+[t2t1 - USED IN - t3.cs- DEFINED IN - t1.cs]
+[t2t1 - USED IN - t3.cs- DEFINED IN - t2.cs]
+[Example3 - USED IN - TestCase-eligibleCheck.cs- DEFINED IN - SemiT.cs]
+[Example4 - USED IN - TestCase-eligibleCheck.cs- DEFINED IN - SemiT.cs]
+[myClass1 - USED IN - t3.cs- DEFINED IN - t1.cs]
+[Program - USED IN - t1.cs- DEFINED IN - t3.cs]

@@ -1,4 +1,18 @@
-﻿<Window x:Class="Navigator.MainWindow"
+﻿<!-- 
+/////////////////////////////////////////////////////////////////////////////////////
+// MainWindow.xaml - Completely changed the GUI to act as the client for Dependency// 
+// Analysis program. It can traverse directories, select files and display results //
+// of analysis.                                                                    //
+// ver 3.1                                                                         //
+// Author: Debopriyo Bhattacharya                                                  //
+// Original Code by Jim Fawcett, CSE681 - Software Modeling and Analysis, Fall 2018//
+/////////////////////////////////////////////////////////////////////////////////////
+
+  
+  -->
+  
+  
+  <Window x:Class="Navigator.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,51 +21,60 @@
         mc:Ignorable="d"
         Closing="Window_Closing"
         Closed="Window_Closed"
-        Title="Navigator Client" Height="750" Width="750">
-    <Window.Resources>
-        <!-- 
+        Title="Analyzer Client" Height="750" Width="750">
+  <Window.Resources>
+    <!-- 
     /////////////////////////////////////////////////////////////////////////
     // NavigatorClient.xaml - Demonstrates Directory Navigation in WPF App //
     // ver 2.0                                                             //
     // Jim Fawcett, CSE681 - Software Modeling and Analysis, Fall 2017     //
     /////////////////////////////////////////////////////////////////////////
     -->
-        <Style TargetType="{x:Type Label}">
-            <Setter Property="Foreground" Value="DarkSlateBlue" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="FontSize" Value="14" />
-        </Style>
-        <Style TargetType="{x:Type Button}">
-            <Setter Property="Foreground" Value="DarkSlateBlue" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="FontSize" Value="14" />
-        </Style>
-        <Style TargetType="{x:Type TabItem}">
-            <Setter Property="Foreground" Value="DarkSlateBlue" />
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="FontSize" Value="16" />
-        </Style>
-        <Style TargetType="{x:Type ListBox}">
-            <Setter Property="Foreground" Value="DarkSlateBlue" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="FontSize" Value="14" />
-        </Style>
+    <Style TargetType="{x:Type Label}">
+      <Setter Property="Foreground" Value="DarkSlateBlue" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style x:Key="Hint" TargetType="{x:Type Label}">
+      <Setter Property="Foreground" Value="Blue" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="FontSize" Value="11" />
+    </Style>
+    <Style TargetType="{x:Type Button}">
+      <Setter Property="Foreground" Value="DarkSlateBlue" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style TargetType="{x:Type TabItem}">
+      <Setter Property="Foreground" Value="DarkSlateBlue" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="FontSize" Value="16" />
+    </Style>
+    <Style TargetType="{x:Type ListBox}">
+      <Setter Property="Foreground" Value="DarkSlateBlue" />
+      <Setter Property="FontWeight" Value="Medium" />
+      <Setter Property="FontSize" Value="14" />
+    </Style>
 
-      <Style TargetType="{x:Type ListViewItem}">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type ListViewItem}">
-              <ContentPresenter />
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
+    <Style TargetType="{x:Type ListViewItem}">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="{x:Type ListViewItem}">
+            <ContentPresenter />
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
 
   </Window.Resources>
-    <Grid>
-        <Border Padding="10" Background="#ddd" BorderThickness="0 4 0 0" BorderBrush="DarkSlateBlue">
-            <TabControl Name = "tabControl">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="37*"/>
+      <ColumnDefinition Width="335*"/>
+    </Grid.ColumnDefinitions>
+    <Border Padding="10" Background="#ddd" BorderThickness="0 4 0 0" BorderBrush="DarkSlateBlue" Grid.ColumnSpan="2" Margin="0,0,0,-0.2">
+      <TabControl Name = "tabControl">
         <TabItem Header="Connect" Padding="10 5">
 
           <Grid>
@@ -72,22 +95,22 @@
 
         </TabItem>
         <TabItem Name="Local" Header="File Select">
-          
+
           <!--- define top-level grid with four cells: local files & dirs, and remote files & dirs -->
-                    <Grid>
-                        <Grid.RowDefinitions>
+          <Grid>
+            <Grid.RowDefinitions>
               <RowDefinition Height="50"></RowDefinition>
-                          <RowDefinition Height="*"></RowDefinition>
-                            <RowDefinition Height="5"></RowDefinition>
-                            <RowDefinition Height="*"></RowDefinition>
-                            <RowDefinition Height="5"></RowDefinition>
-                            <RowDefinition Height="*"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
+              <RowDefinition Height="5"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
+              <RowDefinition Height="5"></RowDefinition>
+              <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                            <ColumnDefinition Width="5"></ColumnDefinition>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"></ColumnDefinition>
+              <ColumnDefinition Width="5"></ColumnDefinition>
+              <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
             <Grid Grid.ColumnSpan="3">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="50"></ColumnDefinition>
@@ -104,87 +127,89 @@
             </Grid>
 
             <!-- define local files view -->
-                        <Grid Grid.Column="0" Grid.Row="1">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="30"></RowDefinition>
-                                <RowDefinition Height="*"></RowDefinition>
-                            </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Height="30" Orientation="Horizontal">
-                                <Label Height="30" x:Name="localFilesLabel" Foreground="DarkSlateBlue" FontWeight="bold">Local Files</Label>
-                                <Label Width="10"></Label>
-                                <Button Name="localTop" Width="80" Height="25" Click="localTop_Click">Get Top</Button>
-                            </StackPanel>
-            <!--  <ListBox Grid.Row="1" x:Name="localFiles" SelectionMode="Multiple" MouseDoubleClick="localFiles_MouseDoubleClick"></ListBox>
+            <Grid Grid.Column="0" Grid.Row="1">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Height="30" Orientation="Horizontal">
+                <Label Height="30" x:Name="localFilesLabel" Foreground="DarkSlateBlue" FontWeight="bold">Local Files</Label>
+                <Label Width="10"></Label>
+                <Button Name="localTop" Width="80" Height="25" Click="localTop_Click">Get Top</Button>
+              </StackPanel>
+              <!--  <ListBox Grid.Row="1" x:Name="localFiles" SelectionMode="Multiple" MouseDoubleClick="localFiles_MouseDoubleClick"></ListBox>
                  -->
               <ListBox x:Name="localFiles" Grid.Row="1"  SelectionMode="Single" MouseDoubleClick="localFiles_MouseDoubleClick">
               </ListBox>
 
             </Grid>
 
-                        <GridSplitter Grid.Row="2" Grid.ColumnSpan="3" Height="5" HorizontalAlignment="Stretch" Background="#ddd"></GridSplitter>
+            <GridSplitter Grid.Row="2" Grid.ColumnSpan="3" Height="5" HorizontalAlignment="Stretch" Background="#ddd"></GridSplitter>
 
-                        <!-- define local dirs view -->
-                        <Grid Grid.Column="0" Grid.Row="3">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="30"></RowDefinition>
-                                <RowDefinition Height="*"></RowDefinition>
-                            </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Height="30" Orientation="Horizontal">
-                                <Label Height="30">Local Dirs</Label>
-                                <Label Width="10"></Label>
-                                <Button Name="localUp" Width="50" Height="25" Click="localUp_Click">Up</Button>
-                            </StackPanel>
-              <ListBox Name="localDirs" MouseDoubleClick="localDirs_MouseDoubleClick" Grid.Row="1"/>
-                        </Grid>
-
-                        <!-- define remote files view -->
-                        <Grid Grid.Column="2" Grid.Row="1">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="30"></RowDefinition>
-                                <RowDefinition Height="*"></RowDefinition>
-                            </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Height="30" Orientation="Horizontal">
-                                <Label Height="30">Remote Files</Label>
-                                <Label Width="10"></Label>
-                                <Button Name="RemoteTop" Width="80" Height="25" Click="RemoteTop_Click">Get Top</Button>
-                            </StackPanel>
-                            <ListBox Grid.Row="1" Name="remoteFiles" MouseDoubleClick="remoteFiles_MouseDoubleClick"></ListBox>
-                        </Grid>
-
-            <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" Width="5" HorizontalAlignment="Stretch" Background="#ddd"></GridSplitter>
-
-                        <!-- define remote dirs view -->
-                        <Grid Grid.Column="2" Grid.Row="3">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="30"></RowDefinition>
-                                <RowDefinition Height="*"></RowDefinition>
-                            </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Height="30" Orientation="Horizontal">
-                                <Label Height="30">Remote Dirs</Label>
-                                <Label Width="10"></Label>
-                                <Button Name="RemoteUp" Width="50" Height="25" Click="RemoteUp_Click">Up</Button>
-                            </StackPanel>
-                            <ListBox Grid.Row="1" Name="remoteDirs" MouseDoubleClick="remoteDirs_MouseDoubleClick"></ListBox>
-                        </Grid>
-                        <GridSplitter Grid.Row="4" Grid.ColumnSpan="3" Height="5" HorizontalAlignment="Stretch" Background="#ddd"></GridSplitter>
-
-                        <Grid Grid.Row="5" Grid.ColumnSpan="3">
+            <!-- define local dirs view -->
+            <Grid Grid.Column="0" Grid.Row="3">
               <Grid.RowDefinitions>
                 <RowDefinition Height="30"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
               </Grid.RowDefinitions>
               <StackPanel Grid.Row="0" Height="30" Orientation="Horizontal">
-                <Label Height="30">Selected Files: </Label>
+                <Label Height="30">Local Dirs</Label>
+                <Label Width="10"></Label>
+                <Button Name="localUp" Width="50" Height="25" Click="localUp_Click">Up</Button>
+              </StackPanel>
+              <ListBox Name="localDirs" MouseDoubleClick="localDirs_MouseDoubleClick" Grid.Row="1"/>
+            </Grid>
+
+            <!-- define remote files view -->
+            <Grid Grid.Column="2" Grid.Row="1">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Height="30" Orientation="Horizontal">
+                <Label Height="30">Remote Files</Label>
+                <Label Width="10"></Label>
+                <Button Name="RemoteTop" Width="80" Height="25" Click="RemoteTop_Click">Get Top</Button>
+              </StackPanel>
+              <ListBox Grid.Row="1" Name="remoteFiles" MouseDoubleClick="remoteFiles_MouseDoubleClick"></ListBox>
+            </Grid>
+
+            <GridSplitter Grid.Column="1" Grid.Row="1" Grid.RowSpan="3" Width="5" HorizontalAlignment="Stretch" Background="#ddd"></GridSplitter>
+
+            <!-- define remote dirs view -->
+            <Grid Grid.Column="2" Grid.Row="3">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Height="30" Orientation="Horizontal">
+                <Label Height="30">Remote Dirs</Label>
+                <Label Width="10"></Label>
+                <Button Name="RemoteUp" Width="50" Height="25" Click="RemoteUp_Click">Up</Button>
+              </StackPanel>
+              <ListBox Grid.Row="1" Name="remoteDirs" MouseDoubleClick="remoteDirs_MouseDoubleClick"></ListBox>
+            </Grid>
+            <GridSplitter Grid.Row="4" Grid.ColumnSpan="3" Height="5" HorizontalAlignment="Stretch" Background="#ddd"></GridSplitter>
+
+            <Grid Grid.Row="5" Grid.ColumnSpan="3">
+              <Grid.RowDefinitions>
+                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+              </Grid.RowDefinitions>
+              <StackPanel Grid.Row="0" Height="30" Orientation="Horizontal">
+                <Label Height="30">Selected Files:</Label>
                 <Label Width="10"></Label>
                 <Button Name="clearAll" Width="50" Height="25" Click="clear_Click">Clear</Button>
                 <Label Width="10"></Label>
                 <Button x:Name="AnalButton2" Height="25" Width="75" Click="Anal2_Click" Padding="2">Analyze</Button>
+                <Label Width="20"></Label>
+                <Label Style="{StaticResource Hint}" Height="30">Hint: [ double-click on dir and files to select | double-click below files to remove ]</Label>
               </StackPanel>
               <ListBox Grid.Row="1" Name="Selected" SelectionMode="Single" MouseDoubleClick="selectedFiles_MouseDoubleClick"></ListBox>
             </Grid>
           </Grid>
-                </TabItem>
-   <!--     <TabItem Header="Find Path" Padding="10 5">
+        </TabItem>
+        <!--     <TabItem Header="Find Path" Padding="10 5">
           <DockPanel>
 
             <Grid DockPanel.Dock="Top">
@@ -201,7 +226,8 @@
               <Label Grid.Column="3" Width="20"></Label>
               <Button Grid.Column="4" x:Name="AnalButton" Height="27" Width="75" Click="AnalButton_Click" Padding="2">Analyze</Button>
             </Grid>
- -->     <!--      <Grid>
+ -->
+        <!--      <Grid>
               <Grid.RowDefinitions>
                 <RowDefinition Height="*"></RowDefinition>
                 <RowDefinition Height="5"></RowDefinition>
@@ -237,6 +263,6 @@
 
         </TabItem>
       </TabControl>
-        </Border>
-    </Grid>
+    </Border>
+  </Grid>
 </Window>

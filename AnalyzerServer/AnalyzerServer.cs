@@ -1,18 +1,29 @@
 ﻿////////////////////////////////////////////////////////////////////////////
-// NavigatorServer.cs - File Server for WPF NavigatorClient Application   //
+// AnalyzerServer.cs - File Server for WPF NavigatorClient Application   //
 // ver 2.0                                                                //
 // Jim Fawcett, CSE681 - Software Modeling and Analysis, Fall 2017        //
 ////////////////////////////////////////////////////////////////////////////
 /*
  * Package Operations:
  * -------------------
- * This package defines a single NavigatorServer class that returns file
- * and directory information about its rootDirectory subtree.  It uses
- * a message dispatcher that handles processing of all incoming and outgoing
- * messages.
+ * This package defines a single AnalyzerServer class that returns file
+ * and directory information about its rootDirectory subtree.  
+ * It is able to go back up to the root directory. It is able to select 
+ * and return full file paths of selected directories. It also sends 
+ * selected paths to the depency analyzer program and returns to the 
+ * Client side the paths of the result files.
+ * It uses a message dispatcher that handles processing of all incoming 
+ * and outgoing messages.
  * 
  * Maintanence History:
  * --------------------
+ * ver 3.0 : 02 Dec 2018
+ * - modified to work as a server for file dependency analyzer program
+ * - it finds the paths of the selected files and then sends them to the 
+ * dependency analyzer
+ * - returns the result of the dependency analysis to the client
+ * ver 2.1 : 01 Dec 2018
+ * - added functionalities for Connection checking , Remote Files and Folder selecting 
  * ver 2.0 - 24 Oct 2017
  * - added message dispatcher which works very well - see below
  * - added these comments
@@ -26,10 +37,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MessagePassingComm;
+using Dependency_Analysis;
 
 namespace Navigator
 {
-  public class NavigatorServer
+  public class AnalyzerServer
   {
     IFileMgr localFileMgr { get; set; } = null;
     Comm comm { get; set; } = null;
@@ -39,10 +51,10 @@ namespace Navigator
 
     /*----< initialize server processing >-------------------------*/
 
-    public NavigatorServer()
+    public AnalyzerServer()
     {
       initializeEnvironment();
-      Console.Title = "Navigator Server";
+      Console.Title = "Analyzer Server Console";
       localFileMgr = FileMgrFactory.create(FileMgrType.Local);
     }
     /*----< set Environment properties needed by server >----------*/
@@ -189,7 +201,80 @@ namespace Navigator
       };
       messageDispatcher["getFileDetails"] = getFileDetails;
 
+      Func<CommMessage, CommMessage> analysePath = (CommMessage msg) =>
+      {
+        /*
+        Do analysis using path
+        here message argument is path to directory
+        */
 
+        string[] args = msg.arguments.ToArray();
+
+        string an = "result.txt";
+        string sc = "strongCom.txt";
+        string path = "../../../result/";
+        path = System.IO.Path.GetFullPath(path);
+        System.IO.Directory.CreateDirectory(path);
+
+        StringBuilder result = new StringBuilder();
+        result.Append(DepAnalysis.demoTypeTable(args));
+        result.Append(DepAnalysis.usageDetails(args));
+
+        StringBuilder strongcom = new StringBuilder();
+        strongcom.Append(DepAnalysis.demoStrongComp(args));
+
+        System.IO.File.WriteAllText(path + an, result.ToString());
+        System.IO.File.WriteAllText(path + sc, strongcom.ToString());
+        
+
+
+        CommMessage reply = new CommMessage(CommMessage.MessageType.reply);
+        reply.to = msg.from;
+        reply.from = msg.to;
+        reply.command = "displayAnalysis";
+        reply.arguments.Add(path + an);
+        reply.arguments.Add(path + sc);
+
+        return reply;
+      };
+      messageDispatcher["analysePath"] = analysePath;
+
+      Func<CommMessage, CommMessage> analyseFiles = (CommMessage msg) =>
+      {
+        /*
+        Do analysis using files
+        here message arguments are files 
+        */
+        List<string> files = msg.arguments;
+
+        string an = "result.txt";
+        string sc = "strongCom.txt";
+        string path = "../../../result/";
+        path = System.IO.Path.GetFullPath(path);
+        System.IO.Directory.CreateDirectory(path);
+
+        StringBuilder result = new StringBuilder();
+        result.Append(DepAnalysis.demoTypeTableF(files));
+        result.Append(DepAnalysis.usageDetailsF(files));
+
+        StringBuilder strongcom = new StringBuilder();
+        strongcom.Append(DepAnalysis.demoStrongCompF(files));
+
+        System.IO.File.WriteAllText(path + an, result.ToString());
+        System.IO.File.WriteAllText(path + sc, strongcom.ToString());
+
+
+
+        CommMessage reply = new CommMessage(CommMessage.MessageType.reply);
+        reply.to = msg.from;
+        reply.from = msg.to;
+        reply.command = "displayAnalysis";
+        reply.arguments.Add(path + an);
+        reply.arguments.Add(path + sc);
+
+        return reply;
+      };
+      messageDispatcher["analyseFiles"] = analyseFiles;
     }
 
   /*----< Server processing >------------------------------------*/
@@ -199,10 +284,10 @@ namespace Navigator
    */
   static void Main(string[] args)
     {
-      TestUtilities.title("Starting Navigation Server", '=');
+      TestUtilities.title("Starting Analyzer Server", '=');
       try
       {
-        NavigatorServer server = new NavigatorServer();
+        AnalyzerServer server = new AnalyzerServer();
         server.initializeDispatcher();
         server.comm = new MessagePassingComm.Comm(ServerEnvironment.address, ServerEnvironment.port);
         

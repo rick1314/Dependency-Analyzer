@@ -74,6 +74,7 @@ namespace AutomatedTestUtility
             //msg.Append(Environment.NewLine + "5. Your dependency analysis shall be based on identification of all the user-defined types in the specified set of files. That means you will need to identify all of the Types defined within that code, e.g., interfaces, classes, structs, enums, and delegates. You will also need to consider aliases, since an alias may refer to a type defined in another file. One last obligation - you need to account for namespaces.");
             //msg.Append(Environment.NewLine + "  Have fulfilled Requirements 5 as the following:");
             msg.Append(DepAnalysis.demoTypeTable(args));
+            msg.Append(DepAnalysis.usageDetails(args));
           return msg;
         }
 
@@ -90,6 +91,7 @@ namespace AutomatedTestUtility
       //msg.Append(Environment.NewLine + "5. Your dependency analysis shall be based on identification of all the user-defined types in the specified set of files. That means you will need to identify all of the Types defined within that code, e.g., interfaces, classes, structs, enums, and delegates. You will also need to consider aliases, since an alias may refer to a type defined in another file. One last obligation - you need to account for namespaces.");
       //msg.Append(Environment.NewLine + "  Have fulfilled Requirements 5 as the following:");
       msg.Append(DepAnalysis.demoTypeTableF(files));
+      msg.Append(DepAnalysis.usageDetailsF(files));
       return msg;
     }
 
